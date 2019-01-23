@@ -1,6 +1,4 @@
-![gs-localization-logo](https://user-images.githubusercontent.com/3796970/51634838-e7a0b780-1f5d-11e9-8105-283540eb5b7d.png)
-
-# iOS and Android localization using Google Sheets
+# iOS and Android Localization using Google Sheets
 
 ## Basic idea
 
