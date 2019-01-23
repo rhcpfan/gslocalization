@@ -1,0 +1,7 @@
+argparse
+typing
+pygsheets
+lxml
+colorama
+langcodes; python_version>"3"
+langcodes-py2; python_version<"3"
