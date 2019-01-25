@@ -1,6 +1,6 @@
 argparse
 typing
-pygsheets
+-e git+https://github.com/rhcpfan/pygsheets.git#egg=pygsheets
 lxml
 colorama
 langcodes; python_version>"3"
