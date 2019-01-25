@@ -3,15 +3,22 @@ from typing import List
 
 
 class GoogleSheetsManager(object):
-    def __init__(self, service_account_file_path, user_email):
-        # type: (str, str) -> GoogleSheetsManager
+    def __init__(self, service_account_file_path, user_email=None, project_name=None):
+        # type: (str, str, str) -> GoogleSheetsManager
         self.google_client = pygsheets.authorize(service_account_file=service_account_file_path)
         self.user_email = user_email
+        self.project_name = project_name
+
+    def get_spreadsheet_name(self, language):
+        # type: (str) -> str
+        if self.project_name is not None:
+            return '{}_{}_localizations'.format(self.project_name, language)
+        else:
+            return '{}_localizations'.format(language)
 
     def create_spreadsheet(self, platform, language, header_values, overwrite=False):
 
-        sh_name = '{}_localizations'.format(language)
-
+        sh_name = self.get_spreadsheet_name(language=language)
         # Delete all spreadsheets with the same name if overwrite = True
         if overwrite:
             all_sh = self.google_client.open_all()
@@ -37,7 +44,7 @@ class GoogleSheetsManager(object):
 
     def get_worksheet(self, platform, language, header_values):
         # type: (str, str, List[str]) -> pygsheets.Worksheet
-        spreadsheet_name = '{}_localizations'.format(language)
+        spreadsheet_name = self.get_spreadsheet_name(language=language)
         worksheet_name = '{}_strings'.format(platform)
 
         try:
