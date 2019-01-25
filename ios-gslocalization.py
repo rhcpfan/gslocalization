@@ -1,5 +1,5 @@
 import argparse
-
+from os import path
 from models.ios_xliff_file import export_xliff_files, load_xliff_files
 from cloud_managers.google_sheets_manager import GoogleSheetsManager
 
@@ -13,13 +13,14 @@ ap.add_argument('-o', '--output_dir', required=True, help='output dir for saving
 
 args = vars(ap.parse_args())
 
-xcodeproj_path = args['xcodeproj_path']
+xcodeproj_path = args['xcodeproj_path'].rstrip('/')
+project_name = path.splitext(path.basename(xcodeproj_path))[0]
 loc_output_path = args['output_dir']
 service_account_file = args['auth_file_path']
 user_email = args['email']
 localization_languages = args['languages'].split(',')
 
-google_sheets_manager = GoogleSheetsManager(service_account_file, user_email)
+google_sheets_manager = GoogleSheetsManager(service_account_file, user_email, project_name)
 
 # xliff_files = export_xliff_files(xcodeproj_path, localization_languages, loc_output_path)
 xliff_files = load_xliff_files(localization_languages, loc_output_path)
