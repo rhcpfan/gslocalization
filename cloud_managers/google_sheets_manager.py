@@ -35,7 +35,7 @@ class GoogleSheetsManager(object):
         platform_worksheet_name = '{}_strings'.format(platform)
         platform_worksheet = lang_sh.add_worksheet(title=platform_worksheet_name, rows=1, cols=len(header_values))
         lang_sh.del_worksheet(lang_sh.sheet1)
-        lang_sh.share(self.user_email, type='user', role='writer')
+        lang_sh.share(self.user_email, type='user', role='owner', transferOwnership=True)
 
         self.update_worksheet_header(worksheet=platform_worksheet,
                                      header_values=header_values)
