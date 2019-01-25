@@ -60,7 +60,6 @@ class GoogleSheetsManager(object):
         # type: (pygsheets.Worksheet, List[str]) -> None
 
         current_header = worksheet.get_row(row=1)
-        current_header = [h.encode('utf-8') for h in current_header]
         if current_header != header_values:
             worksheet.insert_rows(row=0, number=1, values=header_values)
 

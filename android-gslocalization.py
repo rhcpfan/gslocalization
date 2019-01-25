@@ -9,14 +9,14 @@ ap = argparse.ArgumentParser()
 ap.add_argument('-r', '--res_folder_path', required=True, help='path to the \'res\' directory', metavar='\b')
 ap.add_argument('-a', '--auth_file_path', required=True, help='path to the Google Sheets authorization JSON file', metavar='\b')
 ap.add_argument('-e', '--email', required=True, help='email used for sharing newly created worksheets', metavar='\b')
-ap.add_argument('-l', '--dev_language', required=True, help='development language code (default=en)', metavar='\b')
+ap.add_argument('-l', '--dev_language', required=False, default='en', help='development language code (default=en)', metavar='\b')
 
 args = vars(ap.parse_args())
 
 res_folder_path = args['res_folder_path']
 service_account_file = args['auth_file_path']
 user_email = args['email']
-development_language = 'en'
+development_language = args['dev_language']
 
 google_sheets_manager = GoogleSheetsManager(service_account_file_path=service_account_file, user_email=user_email)
 android_files = import_from_res_folder(res_folder_path=res_folder_path, development_language=development_language)

@@ -3,7 +3,7 @@ import sys
 from os import path
 from lxml import etree
 from typing import List
-from pygsheets.utils import numericise
+from utils.gs_header_types import IosGSHeaderValues
 from utils.utils import print_with_timestamp, get_language_name, get_language_code
 from models.translation_units import XliffTranslationUnit
 from pygsheets.custom_types import ValueRenderOption
@@ -31,7 +31,12 @@ class IosXliffFile(object):
 
     @property
     def header_values(self):
-        return [self.source_language, self.target_language, 'Example', 'Notes', 'Element ID', 'Path']
+        return [self.source_language,
+                self.target_language,
+                IosGSHeaderValues.EXAMPLE,
+                IosGSHeaderValues.COMMENT,
+                IosGSHeaderValues.KEY,
+                IosGSHeaderValues.PATH]
 
     def load(self, file_path):
         # type: (str) -> None
@@ -42,6 +47,9 @@ class IosXliffFile(object):
             file_path = file_element.get('original')
             source_language_code = file_element.get('source-language')
             target_language_code = file_element.get('target-language')
+
+            if target_language_code is None:
+                target_language_code = source_language_code
 
             self.source_language = get_language_name(source_language_code)
             self.target_language = get_language_name(target_language_code)
@@ -84,8 +92,8 @@ class IosXliffFile(object):
         lang_ws = gsheets_manager.get_worksheet(platform='ios', language=self.target_language,
                                                 header_values=self.header_values)
 
-        ws_records = lang_ws.get_all_records(value_render=ValueRenderOption.FORMULA)
-        ws_records_ids = [r['Element ID'] for r in ws_records]
+        ws_records = lang_ws.get_all_records(numericise_data=False, value_render=ValueRenderOption.FORMULA)
+        ws_records_ids = [r[IosGSHeaderValues.KEY] for r in ws_records]
 
         records_to_add = [u.record_value for u in self.translation_units if u.identifier not in ws_records_ids]
         if len(records_to_add) > 0:
@@ -121,7 +129,7 @@ class IosXliffFile(object):
             matched_units = [online_unit for online_unit in online_translation_units if
                              online_unit.identifier == t_unit.identifier]
             if len(matched_units) > 0 and matched_units[0].is_translated():
-                print_with_timestamp(u"TRANSLATED: {}".format(matched_units[0]))
+                print_with_timestamp(u"TRANSLATED: {}".format(matched_units[0]), color='g')
                 t_unit.target_text = matched_units[0].target_text
                 self.has_updates = True
 
@@ -132,7 +140,7 @@ class IosXliffFile(object):
         lang_ws = gsheets_manager.get_worksheet(platform='ios',
                                                 language=self.target_language,
                                                 header_values=self.header_values)
-        ws_records = lang_ws.get_all_records(value_render=ValueRenderOption.FORMULA)  # type: List[dict]
+        ws_records = lang_ws.get_all_records(numericise_data=False, value_render=ValueRenderOption.FORMULA)
 
         xliff_translation_units = []
 
@@ -147,10 +155,10 @@ class IosXliffFile(object):
 
             xliff_translation_unit = XliffTranslationUnit(source_text=record[self.source_language],
                                                           target_text=record[self.target_language],
-                                                          example_text=record['Example'],
-                                                          notes=record['Notes'],
-                                                          identifier=record['Element ID'],
-                                                          file_path=record['Path'],
+                                                          example_text=record[IosGSHeaderValues.EXAMPLE],
+                                                          notes=record[IosGSHeaderValues.COMMENT],
+                                                          identifier=record[IosGSHeaderValues.KEY],
+                                                          file_path=record[IosGSHeaderValues.PATH],
                                                           source_language=source_language_code,
                                                           target_language=target_language_code,
                                                           friendly_source_language=self.source_language,
@@ -180,7 +188,7 @@ class IosXliffFile(object):
                 target_node = etree.Element('target')
                 target_node.text = t_unit.target_text
                 xml_t_unit_node.append(target_node)
-            elif target_node is not None and numericise(target_node.text) != numericise(t_unit.target_text):
+            elif target_node is not None and target_node.text != t_unit.target_text:
                 target_node.text = t_unit.target_text
 
         xliff_tree.write(self.original_file_path,
@@ -197,7 +205,7 @@ class IosXliffFile(object):
                       '-project', xcodeproj_path]
 
         print_with_timestamp("IMPORTING {} INTO {}".format(self.original_file_path, path.basename(path.normpath(xcodeproj_path))), color='y')
-        xcb = subprocess.Popen(['xcodebuild'] + xcb_params, stderr=subprocess.PIPE)
+        xcb = subprocess.Popen(['xcodebuild'] + xcb_params, stdout=subprocess.PIPE)
         xcb.wait()
 
 

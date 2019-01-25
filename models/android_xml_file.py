@@ -3,8 +3,8 @@ from copy import deepcopy
 from os import path, walk
 from lxml import etree
 from typing import List
+from utils.gs_header_types import AndroidGSHeaderValues
 from utils.utils import get_language_name, get_language_code
-from pygsheets.utils import numericise
 from pygsheets.custom_types import ValueRenderOption
 
 from utils.utils import print_with_timestamp, is_python_2
@@ -32,7 +32,7 @@ class AndroidXmlFile(object):
         source_header_value = '{}'.format(self.source_language)
         target_header_value = '{}'.format(self.target_language)
 
-        return [source_header_value, target_header_value, 'Element ID']
+        return [source_header_value, target_header_value, AndroidGSHeaderValues.STRING_ID]
 
     def load(self, file_path):
         # type: (str) -> None
@@ -115,8 +115,9 @@ class AndroidXmlFile(object):
                                                 language=self.target_language,
                                                 header_values=self.header_values)
 
-        ws_records = lang_ws.get_all_records(value_render=ValueRenderOption.UNFORMATTED_VALUE)
-        ws_records_ids = [r['Element ID'] for r in ws_records]
+        ws_records = lang_ws.get_all_records(numericise_data=False, value_render_option=ValueRenderOption.FORMULA)
+
+        ws_records_ids = [r[AndroidGSHeaderValues.STRING_ID] for r in ws_records]
 
         records_to_add = [u.record_value for u in self.translation_units if u.identifier not in ws_records_ids]
         untranslated_records = [u.record_value for u in self.untranslated if u.identifier not in ws_records_ids]
@@ -148,7 +149,7 @@ class AndroidXmlFile(object):
             if len(online_t_units) == 0:
                 mismatched_records.append(offline_t_unit)
             else:
-                offline_target_text = numericise(offline_t_unit.target_text) if offline_t_unit.target_text is not None else ''
+                offline_target_text = offline_t_unit.target_text if offline_t_unit.target_text is not None else ''
                 if online_t_units[0].target_text != offline_target_text:
                     offline_t_unit.target_text = online_t_units[0].target_text
                     mismatched_records.append(offline_t_unit)
@@ -159,7 +160,7 @@ class AndroidXmlFile(object):
 
             if len(matched_units) > 0:
                 m_unit = matched_units[0]
-                m_unit_target_text = numericise(m_unit.target_text) if m_unit.target_text is not None else ''
+                m_unit_target_text = m_unit.target_text if m_unit.target_text is not None else ''
                 untranslated_unit.target_text = m_unit_target_text
                 mismatched_records.append(untranslated_unit)
 
@@ -249,7 +250,7 @@ class AndroidXmlFile(object):
                 element_to_string = element_to_string[:element_to_string.index('</string>')]
 
                 target_language_text = element_to_string
-                if numericise(target_language_text) != numericise(t_unit.target_text):
+                if target_language_text != t_unit.target_text:
                     xml_t_unit_node.text = t_unit.target_text
 
         xml_string_content = etree.tostring(xml_tree,

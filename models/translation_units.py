@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import List
+from utils.gs_header_types import AndroidGSHeaderValues, IosGSHeaderValues
 
 
 class XliffTranslationUnit(object):
@@ -13,20 +14,8 @@ class XliffTranslationUnit(object):
         self.source_language = source_language  # type: str
         self.target_language = target_language  # type: str
         self.source_text = source_text  # type: str
-
-        if isinstance(target_text, basestring):
-            target_text_str = target_text
-        else:
-            target_text_str = str(target_text)
-
-        self.target_text = target_text_str  # type: str
-
-        if isinstance(notes, basestring):
-            notes_str = notes
-        else:
-            notes_str = str(notes)
-
-        self.notes = [note.strip() for note in notes_str.split('\n')]  # type: List[str]
+        self.target_text = target_text  # type: str
+        self.notes = [note.strip() for note in notes.split('\n')]  # type: List[str]
         self.example_text = example_text
         self.file_path = file_path
 
@@ -58,10 +47,10 @@ class XliffTranslationUnit(object):
         return {
             self.friendly_source_language: source_text,
             self.friendly_target_language: target_text,
-            'Example': self.example_text,
-            'Notes': ', '.join(self.notes),
-            'Element ID': self.identifier,
-            'Path': self.file_path
+            IosGSHeaderValues.EXAMPLE: self.example_text,
+            IosGSHeaderValues.COMMENT: ', '.join(self.notes),
+            IosGSHeaderValues.KEY: self.identifier,
+            IosGSHeaderValues.PATH: self.file_path
         }
 
 
@@ -98,7 +87,7 @@ class AndroidXmlTranslationUnit(object):
         return {
             self.friendly_source_language: source_text,
             self.friendly_target_language: target_text,
-            'Element ID': self.identifier
+            AndroidGSHeaderValues.STRING_ID: self.identifier
         }
 
 
@@ -135,5 +124,5 @@ class DotNetResxTranslationUnit(object):
         return {
             self.source_language: source_text,
             self.friendly_target_language: target_text,
-            'Element ID': self.identifier
+            AndroidGSHeaderValues.STRING_ID: self.identifier
         }
