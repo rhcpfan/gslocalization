@@ -223,7 +223,7 @@ def export_xliff_files(xcodeproj_path, languages, output_dir):
         xcb_params.append(language)
 
     print_with_timestamp('GENERATING XLIFF FILES FOR {} TO {}'.format(', '.join(languages), output_dir), color='y')
-    xcb = subprocess.Popen(['xcodebuild'] + xcb_params, stderr=subprocess.PIPE)
+    xcb = subprocess.Popen(['xcodebuild'] + xcb_params, stdout=subprocess.PIPE)
     xcb.wait()
 
     xliff_files = []  # type: List[IosXliffFile]

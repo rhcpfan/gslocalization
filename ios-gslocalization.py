@@ -2,31 +2,45 @@ import argparse
 from os import path
 from models.ios_xliff_file import export_xliff_files, load_xliff_files
 from cloud_managers.google_sheets_manager import GoogleSheetsManager
+from utils.utils import xcode_supports_dev_language_operations
 
-ap = argparse.ArgumentParser()
-ap.add_argument('-x', '--xcodeproj_path', required=True, help='path to the Xcode project', metavar='\b')
-ap.add_argument('-a', '--auth_file_path', required=True, help='path to the Google Sheets authorization JSON file', metavar='\b')
-ap.add_argument('-e', '--email', required=True, help='email used for sharing newly created worksheets', metavar='\b')
-ap.add_argument('-l', '--languages', required=True, help='list of language codes used for importing/exporting '
-                                                         'localizations (comma separated)', metavar='\b')
-ap.add_argument('-o', '--output_dir', required=True, help='output dir for saving the xliff files generated from Xcode', metavar='\b')
 
-args = vars(ap.parse_args())
+def parse_args():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('-x', '--xcodeproj_path', required=True, help='path to the Xcode project', metavar='\b')
+    ap.add_argument('-a', '--auth_file_path', required=True, help='path to the Google Sheets authorization JSON file', metavar='\b')
+    ap.add_argument('-e', '--email', required=True, help='email used for sharing newly created worksheets', metavar='\b')
+    ap.add_argument('-d', '--dev_language', required=False, default='en', help='development language code (default=en)', metavar='\b')
+    ap.add_argument('-l', '--languages', required=True, help='list of language codes used for importing/exporting '
+                                                             'localizations (comma separated)', metavar='\b')
+    ap.add_argument('-o', '--output_dir', required=True, help='output dir for saving the xliff files generated from Xcode', metavar='\b')
 
-xcodeproj_path = args['xcodeproj_path'].rstrip('/')
-project_name = path.splitext(path.basename(xcodeproj_path))[0]
-loc_output_path = args['output_dir']
-service_account_file = args['auth_file_path']
-user_email = args['email']
-localization_languages = args['languages'].split(',')
+    return vars(ap.parse_args())
 
-google_sheets_manager = GoogleSheetsManager(service_account_file, user_email, project_name)
 
-# xliff_files = export_xliff_files(xcodeproj_path, localization_languages, loc_output_path)
-xliff_files = load_xliff_files(localization_languages, loc_output_path)
+if __name__ == "__main__":
+    args = parse_args()
 
-for l_file in xliff_files:
-    l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager)
-    l_file.update_from_google_sheets(gsheets_manager=google_sheets_manager)
-    if l_file.has_updates:
-        l_file.import_in_xcode(xcodeproj_path=xcodeproj_path)
+    xcodeproj_path = args['xcodeproj_path'].rstrip('/')
+    project_name = path.splitext(path.basename(xcodeproj_path))[0]
+    loc_output_path = args['output_dir']
+    service_account_file = args['auth_file_path']
+    user_email = args['email']
+    localization_languages = args['languages'].split(',')  # type: List[str]
+    dev_language = args['dev_language']
+
+    google_sheets_manager = GoogleSheetsManager(service_account_file, user_email, project_name)
+
+    # Starting with XCode 10.2, operations with the development languages (import/export) are supported
+    if xcode_supports_dev_language_operations():
+        localization_languages = ['en'] + localization_languages
+
+
+    xliff_files = export_xliff_files(xcodeproj_path, localization_languages, loc_output_path)
+    # xliff_files = load_xliff_files(localization_languages, loc_output_path)
+
+    for l_file in xliff_files:
+        l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager)
+        l_file.update_from_google_sheets(gsheets_manager=google_sheets_manager)
+        if l_file.has_updates:
+            l_file.import_in_xcode(xcodeproj_path=xcodeproj_path)

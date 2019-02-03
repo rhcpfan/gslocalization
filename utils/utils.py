@@ -46,3 +46,19 @@ def get_language_code(language_name):
     else:
         from langcodes import Language
         return Language(language_name).language
+
+
+def xcode_supports_dev_language_operations():
+    import subprocess
+    from distutils.version import StrictVersion
+    xcb_params = ['-version']
+    xcb = subprocess.Popen(['xcodebuild'] + xcb_params, stdout=subprocess.PIPE)
+    out, err = xcb.communicate()
+
+    xcode_version_str = out.split('\n')[0].split(' ')[1]
+    current_version = StrictVersion(xcode_version_str)
+    ref_version = StrictVersion('10.2')
+
+    return current_version >= ref_version
+
+
