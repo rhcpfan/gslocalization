@@ -3,10 +3,11 @@ import sys
 from os import path
 from lxml import etree
 from typing import List
-from utils.gs_header_types import IosGSHeaderValues
+from utils.gs_header_types import IosHeaderValues
 from utils.utils import print_with_timestamp, get_language_name, get_language_code
 from models.translation_units import XliffTranslationUnit
 from pygsheets.custom_types import ValueRenderOption
+from pygsheets import Worksheet
 
 if sys.version_info > (3, 0):
     from langcodes import Language, find
@@ -31,12 +32,12 @@ class IosXliffFile(object):
 
     @property
     def header_values(self):
-        return [self.source_language,
-                self.target_language,
-                IosGSHeaderValues.EXAMPLE,
-                IosGSHeaderValues.COMMENT,
-                IosGSHeaderValues.KEY,
-                IosGSHeaderValues.PATH]
+        return [IosHeaderValues.SOURCE_LANGUAGE.format(self.source_language),
+                IosHeaderValues.TARGET_LANGUAGE.format(self.target_language),
+                IosHeaderValues.EXAMPLE,
+                IosHeaderValues.COMMENT,
+                IosHeaderValues.KEY,
+                IosHeaderValues.PATH]
 
     def load(self, file_path):
         # type: (str) -> None
@@ -90,14 +91,26 @@ class IosXliffFile(object):
 
         print_with_timestamp("SYNCING {} WITH GOOGLE SHEETS".format(self.original_file_path), color='y')
         lang_ws = gsheets_manager.get_worksheet(platform='ios', language=self.target_language,
-                                                header_values=self.header_values)
+                                                header_values=self.header_values)  # type: Worksheet
 
         ws_records = lang_ws.get_all_records(numericise_data=False, value_render=ValueRenderOption.FORMULA)
-        ws_records_ids = [r[IosGSHeaderValues.KEY] for r in ws_records]
+        ws_records_ids = [r[IosHeaderValues.KEY] for r in ws_records]
 
         records_to_add = [u.record_value for u in self.translation_units if u.identifier not in ws_records_ids]
         if len(records_to_add) > 0:
             lang_ws.insert_rows(row=lang_ws.rows - 1, number=len(records_to_add), values=records_to_add, inherit=True)
+
+        for idx, t_unit in enumerate(ws_records):
+            match = next((u for u in self.translation_units if u.identifier == t_unit[IosHeaderValues.KEY]), None)
+
+            if match is None:
+                continue
+
+            if match.source_text != t_unit[IosHeaderValues.SOURCE_LANGUAGE.format(self.source_language)]:
+                cell_address = 'A{}'.format(idx + 2)
+                lang_ws.update_value(cell_address, match.source_text)
+                print_with_timestamp('UPDATED SOURCE TEXT FROM {} TO {}'.format(t_unit[self.source_language],
+                                                                                match.source_text), color='g')
 
         lang_ws.sort_range((2, 1), (lang_ws.rows, lang_ws.cols))
 
@@ -153,12 +166,12 @@ class IosXliffFile(object):
 
         for record in ws_records:
 
-            xliff_translation_unit = XliffTranslationUnit(source_text=record[self.source_language],
-                                                          target_text=record[self.target_language],
-                                                          example_text=record[IosGSHeaderValues.EXAMPLE],
-                                                          notes=record[IosGSHeaderValues.COMMENT],
-                                                          identifier=record[IosGSHeaderValues.KEY],
-                                                          file_path=record[IosGSHeaderValues.PATH],
+            xliff_translation_unit = XliffTranslationUnit(source_text=record[IosHeaderValues.SOURCE_LANGUAGE.format(self.source_language)],
+                                                          target_text=record[IosHeaderValues.TARGET_LANGUAGE.format(self.target_language)],
+                                                          example_text=record[IosHeaderValues.EXAMPLE],
+                                                          notes=record[IosHeaderValues.COMMENT],
+                                                          identifier=record[IosHeaderValues.KEY],
+                                                          file_path=record[IosHeaderValues.PATH],
                                                           source_language=source_language_code,
                                                           target_language=target_language_code,
                                                           friendly_source_language=self.source_language,

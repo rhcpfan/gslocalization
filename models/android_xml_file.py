@@ -3,7 +3,7 @@ from copy import deepcopy
 from os import path, walk
 from lxml import etree
 from typing import List
-from utils.gs_header_types import AndroidGSHeaderValues
+from utils.gs_header_types import AndroidHeaderValues
 from utils.utils import get_language_name, get_language_code
 from pygsheets.custom_types import ValueRenderOption
 
@@ -32,7 +32,7 @@ class AndroidXmlFile(object):
         source_header_value = '{}'.format(self.source_language)
         target_header_value = '{}'.format(self.target_language)
 
-        return [source_header_value, target_header_value, AndroidGSHeaderValues.STRING_ID]
+        return [source_header_value, target_header_value, AndroidHeaderValues.STRING_ID]
 
     def load(self, file_path):
         # type: (str) -> None
@@ -115,9 +115,8 @@ class AndroidXmlFile(object):
                                                 language=self.target_language,
                                                 header_values=self.header_values)
 
-        ws_records = lang_ws.get_all_records(numericise_data=False, value_render_option=ValueRenderOption.FORMULA)
-
-        ws_records_ids = [r[AndroidGSHeaderValues.STRING_ID] for r in ws_records]
+        ws_records = lang_ws.get_all_records(numericise_data=False, value_render=ValueRenderOption.FORMULA)
+        ws_records_ids = [r[AndroidHeaderValues.STRING_ID] for r in ws_records]
 
         records_to_add = [u.record_value for u in self.translation_units if u.identifier not in ws_records_ids]
         untranslated_records = [u.record_value for u in self.untranslated if u.identifier not in ws_records_ids]

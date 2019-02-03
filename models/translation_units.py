@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import List
-from utils.gs_header_types import AndroidGSHeaderValues, IosGSHeaderValues
+from utils.gs_header_types import AndroidHeaderValues, IosHeaderValues
 
 
 class XliffTranslationUnit(object):
@@ -47,10 +47,10 @@ class XliffTranslationUnit(object):
         return {
             self.friendly_source_language: source_text,
             self.friendly_target_language: target_text,
-            IosGSHeaderValues.EXAMPLE: self.example_text,
-            IosGSHeaderValues.COMMENT: ', '.join(self.notes),
-            IosGSHeaderValues.KEY: self.identifier,
-            IosGSHeaderValues.PATH: self.file_path
+            IosHeaderValues.EXAMPLE: self.example_text,
+            IosHeaderValues.COMMENT: ', '.join(self.notes),
+            IosHeaderValues.KEY: self.identifier,
+            IosHeaderValues.PATH: self.file_path
         }
 
 
@@ -87,7 +87,7 @@ class AndroidXmlTranslationUnit(object):
         return {
             self.friendly_source_language: source_text,
             self.friendly_target_language: target_text,
-            AndroidGSHeaderValues.STRING_ID: self.identifier
+            AndroidHeaderValues.STRING_ID: self.identifier
         }
 
 
@@ -124,5 +124,5 @@ class DotNetResxTranslationUnit(object):
         return {
             self.source_language: source_text,
             self.friendly_target_language: target_text,
-            AndroidGSHeaderValues.STRING_ID: self.identifier
+            AndroidHeaderValues.STRING_ID: self.identifier
         }
