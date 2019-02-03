@@ -133,3 +133,4 @@ langcodes-py2; python_version<'3'
 1. Use a default value for localized strings. By doing this, you'll have the default value (usually the string in the development language) in the source language column, instead of the string key.
 	- For `Objective C`, use `NSLocalizedStringWithDefaultValue(@"KEY", nil, [NSBundle mainBundle], @"DEFAULT_VALUE", @"COMMENT")]` instead of `NSLocalizedString(@"KEY", @"COMMENT")]`
 	- For `Swift`, use `NSLocalizedString("KEY", tableName: nil, bundle: Bundle.main, value: "DEFAULT_VALUE", comment: "COMMENT")` instead of `NSLocalizedString("KEY", comment: "COMMENT")`
+	- Use this [python script](https://gist.github.com/rhcpfan/1c29727b4c80b47605e98b2a265a0c4b) to convert the `NSLocalizedString` calls to include a default value
