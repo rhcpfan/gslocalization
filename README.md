@@ -1,4 +1,4 @@
-# iOS and Android Localization using Google Sheets
+# iOS and Android localization using Google Sheets
 
 ## Basic idea
 
@@ -28,7 +28,7 @@ Clone the repository and run `pip install -r requirements.txt`.
 
 ### Usage
 
-```python ios-gslocalization.py -x {PATH_TO_XCODEPROJ} -o {XLIFF_OUTPUT_DIR} -a {JSON_AUTH_FILE_PATH} -e {SHARE_EMAIL_ADDRESS} -l {LOCALIZATION_LANGUAGES}```
+```python ios-gslocalization.py -x {PATH_TO_XCODEPROJ} -o {XLIFF_OUTPUT_DIR} -a {JSON_AUTH_FILE_PATH} -e {SHARE_EMAIL_ADDRESS} -l {LOCALIZATION_LANGUAGES} -d {DEV_LANGUAGE}```
 
 1. `PATH_TO_XCODEPROJ` - path to your `.xcodeproj` file
 	- used for calling `xcodebuild` (exporting and importing localizations)
@@ -37,31 +37,30 @@ Clone the repository and run `pip install -r requirements.txt`.
 3. `JSON_AUTH_FILE_PATH` - path to the Google Sheets `Service account key`
 4. `SHARE_EMAIL_ADDRESS` - the email address to share the created spreadsheets
 	- since we are using a `Service account key`, all the spreadsheets are created and owned by the service account (ex. localizations@gslocalization.iam.gserviceaccount.com)
-	- after the service account creates the spreadsheets, it shares them with the provided email address
+	- after the service account creates the spreadsheets, it transfers the file ownership to the provided email address
 	- provide your email address to be able to visualise the results in [Google Spreadsheets](https://docs.google.com/spreadsheets/)
 5. `LOCALIZATION_LANGUAGES` - a string containing multiple language codes used for localization 
 	- ex: "es,ru,ja" for Spanish, Russian and Japanese
 	- this does not enable localization for a new language in your Xcode project
 	- provide languages that already exist in your project
+6. `DEV_LANGUAGE ` (optional, defaults to `en`) - the language code for the project's developent language
 	
 ### Notes
 
 - This script exports the current localizations for your project using `xcodebuild`. 
-
-- It parses the obtained XLIFF files and uploads them to Google Sheets. 
-
-- There is one spreadsheet for every language, with the following name format: `{LANGUAGE_NAME}_localizations` (ex. `Spanish_localizations`, `Russian_localizations`, etc.). Inside each spreadsheet, there is one worksheet per platform (ex. `ios_strings`, `android_strings`).
+- It parses the obtained XLIFF files and uploads them to Google Sheets.
+- There is one spreadsheet for every language, with the following name format: `{PROJECT_NAME}_{LANGUAGE_NAME}_localizations` (ex. `MyProject_Spanish_localizations`, `MyProject_Russian_localizations`, etc.). Inside each spreadsheet, there is one worksheet per platform (ex. `ios_strings`, `android_strings`). The `{PROJECT_NAME}` is inferred from the `xcodeproj` filename.
 
 - All the strings are added to their corresponding spreadsheet, with the following header:
 
-  `SOURCE_LANGUAGE | TARGET_LANGUAGE | Example | Notes | Element ID | Path`
+  `Source: SOURCE_LANGUAGE | Target: TARGET_LANGUAGE | Example | Comment | String Key | File Path`
   
-  - `SOURCE_LANGUAGE` = text in the source language
-  - `TARGET_LANGUAGE` = text translated in the target language
+  - `Source: SOURCE_LANGUAGE` = text in the source language
+  - `Target: TARGET_LANGUAGE` = text translated in the target language
   - `Example` = empty if the string contains placeholders (`%@, %d, etc.`). This is a place to provide an example for translators.
-  - `Notes` = `NSLocalisedString` comments
-  - `Element ID` = the ID of the string
-  - `Path` = relative path to the source file of the string (`.strings` file or `.storyboard`)
+  - `Comment ` = `NSLocalisedString` comments
+  - `String Key` = the ID of the string
+  - `File Path` = relative path to the source file of the string (`.strings` file or `.storyboard`)
 
 - After updating the translation in Google Sheets, run the same script again to import the new strings into your XCode project.
 
@@ -69,15 +68,16 @@ Clone the repository and run `pip install -r requirements.txt`.
 
 ### Usage
 
-```python android-gslocalization.py -r {PATH_TO_RES_FOLDER} -a {JSON_AUTH_FILE_PATH} -e {SHARE_EMAIL_ADDRESS} -l {DEVELOPMENT_LANGUAGE}```
+```python android-gslocalization.py -p {PROJECT_NAME} -r {PATH_TO_RES_FOLDER} -a {JSON_AUTH_FILE_PATH} -e {SHARE_EMAIL_ADDRESS} -l {DEVELOPMENT_LANGUAGE}```
 
+1. `PROJECT_NAME ` - project name (used to prefix the spreadsheet name)
 1. `PATH_TO_RES_FOLDER ` - path to your Android `res` folder
 	- looks into this folder for all `strings.xml` files
 	- for any `strings.xml` file, the target language is detected by the parrent folder name (ex. `values-es` for Spanish)
 2. `JSON_AUTH_FILE_PATH` - path to the Google Sheets `Service account key`
 3. `SHARE_EMAIL_ADDRESS` - the email address to share the created spreadsheets
 	- since we are using a `Service account key`, all the spreadsheets are created and owned by the service account (ex. localizations@gslocalization.iam.gserviceaccount.com)
-	- after the service account creates the spreadsheets, it shares them with the provided email address
+	- after the service account creates the spreadsheets, it transfers the file ownership to the provided email address
 	- provide your email address to be able to visualise the results in [Google Spreadsheets](https://docs.google.com/spreadsheets/)
 4. `DEVELOPMENT_LANGUAGE ` - the language code of your development language (default = `en`)
 	
@@ -87,29 +87,29 @@ Clone the repository and run `pip install -r requirements.txt`.
 
 - It parses the obtained XML files and uploads them to Google Sheets. 
 
-- There is one spreadsheet for every language, with the following name format: `{LANGUAGE_NAME}_localizations` (ex. `Spanish_localizations`, `Russian_localizations`, etc.). Inside each spreadsheet, there is one worksheet per platform (ex. `ios_strings`, `android_strings`).
+- There is one spreadsheet for every language, with the following name format: `{PROJECT_NAME}_{LANGUAGE_NAME}_localizations` (ex. `MyProject_Spanish_localizations`, `MyProject_Russian_localizations`, etc.). Inside each spreadsheet, there is one worksheet per platform (ex. `ios_strings`, `android_strings`).
 
 - All the strings are added to their corresponding spreadsheet, with the following header:
 
-  `SOURCE_LANGUAGE | TARGET_LANGUAGE | Element ID`
+  `Source: SOURCE_LANGUAGE | Target: TARGET_LANGUAGE | String ID`
   
-  - `SOURCE_LANGUAGE` = text in the source language
-  - `TARGET_LANGUAGE` = text translated in the target language
-  - `Element ID` = the ID of the string
+  - `Source: SOURCE_LANGUAGE` = text in the source language
+  - `Target: TARGET_LANGUAGE` = text translated in the target language
+  - `String ID` = the ID of the string
 
 - After updating the translation in Google Sheets, run the same script again to overwrite the `strings.xml` files in your resources folder.
 
 
-### Dependencies
+## Dependencies
 
 ```
-# parsing command line arguments
+# parsing arguments
 argparse
 
 # provides access to Google Sheets API
 pygsheets
 
-# for parsing XML/XLIFF files
+# XML parsing for XML/XLIFF files
 lxml
 
 # type hinting
@@ -124,3 +124,12 @@ langcodes-py2; python_version<'3'
 
 ```
 
+## General Tips
+
+1. Keep your project under source control 😉 This allows you to restore your localization files to their previous state, in case this script breaks something.
+
+## iOS Tips
+
+1. Use a default value for localized strings. By doing this, you'll have the default value (usually the string in the development language) in the source language column, instead of the string key.
+	- For `Objective C`, use `NSLocalizedStringWithDefaultValue(@"KEY", nil, [NSBundle mainBundle], @"DEFAULT_VALUE", @"COMMENT")]` instead of `NSLocalizedString(@"KEY", @"COMMENT")]`
+	- For `Swift`, use `NSLocalizedString("KEY", tableName: nil, bundle: Bundle.main, value: "DEFAULT_VALUE", comment: "COMMENT")` instead of `NSLocalizedString("KEY", comment: "COMMENT")`
