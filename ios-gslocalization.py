@@ -35,9 +35,13 @@ if __name__ == "__main__":
     if xcode_supports_dev_language_operations():
         localization_languages = ['en'] + localization_languages
 
+    # Toggle this to False to use the previously exported localization files
+    should_export = False
 
-    xliff_files = export_xliff_files(xcodeproj_path, localization_languages, loc_output_path)
-    # xliff_files = load_xliff_files(localization_languages, loc_output_path)
+    if should_export:
+        xliff_files = export_xliff_files(xcodeproj_path, localization_languages, loc_output_path)
+    else:
+        xliff_files = load_xliff_files(localization_languages, loc_output_path)
 
     for l_file in xliff_files:
         l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager)

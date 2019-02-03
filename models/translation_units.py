@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from typing import List
-from utils.gs_header_types import AndroidHeaderValues, IosHeaderValues
 
 
 class XliffTranslationUnit(object):
@@ -31,27 +30,20 @@ class XliffTranslationUnit(object):
 
     @property
     def record_value(self):
+        """
+        :return: A list of the translation unit properties, in the same order as they should
+        be placed in the corresponding worksheet.
+        :rtype: List[str]
+        """
         return [self.source_text, self.target_text, self.example_text, ', '.join(self.notes), self.identifier,
                 self.file_path]
 
     def is_translated(self):
-        # type: () -> bool
+        """
+        :return: True if the text_string is not None or empty, False otherwise
+        :rtype: bool
+        """
         return True if self.target_text.strip() is not '' else False
-
-    def dictionary_representation(self):
-        # type: () -> dict
-
-        source_text = self.source_text if self.source_text is not None else ''
-        target_text = self.target_text if self.target_text is not None else ''
-
-        return {
-            self.friendly_source_language: source_text,
-            self.friendly_target_language: target_text,
-            IosHeaderValues.EXAMPLE: self.example_text,
-            IosHeaderValues.COMMENT: ', '.join(self.notes),
-            IosHeaderValues.KEY: self.identifier,
-            IosHeaderValues.PATH: self.file_path
-        }
 
 
 class AndroidXmlTranslationUnit(object):
@@ -72,23 +64,16 @@ class AndroidXmlTranslationUnit(object):
 
     @property
     def record_value(self):
+        """
+        :return: A list of the translation unit properties, in the same order as they should
+        be placed in the corresponding worksheet.
+        :rtype: List[str]
+        """
         return [self.source_text, self.target_text, self.identifier]
 
     def is_translated(self):
         # type: () -> bool
         return True if self.target_text.strip() is not '' else False
-
-    def dictionary_representation(self):
-        # type: () -> dict
-
-        source_text = self.source_text if self.source_text is not None else ''
-        target_text = self.target_text if self.target_text is not None else ''
-
-        return {
-            self.friendly_source_language: source_text,
-            self.friendly_target_language: target_text,
-            AndroidHeaderValues.STRING_ID: self.identifier
-        }
 
 
 class DotNetResxTranslationUnit(object):
@@ -114,15 +99,3 @@ class DotNetResxTranslationUnit(object):
     def is_translated(self):
         # type: () -> bool
         return True if self.target_text.strip() is not '' else False
-
-    def dictionary_representation(self):
-        # type: () -> dict
-
-        source_text = self.source_text if self.source_text is not None else ''
-        target_text = self.target_text if self.target_text is not None else ''
-
-        return {
-            self.source_language: source_text,
-            self.friendly_target_language: target_text,
-            AndroidHeaderValues.STRING_ID: self.identifier
-        }

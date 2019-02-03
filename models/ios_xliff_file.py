@@ -8,11 +8,7 @@ from utils.utils import print_with_timestamp, get_language_name, get_language_co
 from models.translation_units import XliffTranslationUnit
 from pygsheets.custom_types import ValueRenderOption
 from pygsheets import Worksheet
-
-if sys.version_info > (3, 0):
-    from langcodes import Language, find
-else:
-    import langcodes
+from cloud_managers.google_sheets_manager import GoogleSheetsManager
 
 
 class IosXliffFile(object):
@@ -28,10 +24,16 @@ class IosXliffFile(object):
 
     @property
     def untranslated(self):
+        """
+        :return: A list of XliffTranslationUnit objects that are not translated (target_text is None or empty).
+        """
         return [t_unit for t_unit in self.translation_units if t_unit.target_text is None or t_unit.target_text is '']
 
     @property
     def header_values(self):
+        """
+        :return: A list of strings that represent the worksheet header values.
+        """
         return [IosHeaderValues.SOURCE_LANGUAGE.format(self.source_language),
                 IosHeaderValues.TARGET_LANGUAGE.format(self.target_language),
                 IosHeaderValues.EXAMPLE,
@@ -40,8 +42,10 @@ class IosXliffFile(object):
                 IosHeaderValues.PATH]
 
     def load(self, file_path):
-        # type: (str) -> None
-
+        """
+        Updates its properties by loading and parsing an XLIFF file
+        :param str file_path: The XLIFF file path
+        """
         xliff_root = etree.parse(file_path).getroot()
 
         for file_element in xliff_root.iter('{urn:oasis:names:tc:xliff:document:1.2}file'):
@@ -84,10 +88,17 @@ class IosXliffFile(object):
 
                 self.translation_units.append(t_unit)
 
-        pass
-
     def sync_with_google_sheets(self, gsheets_manager):
-        # type: (GoogleSheetsManager) -> None
+        """
+        Updates the corresponding worksheet with self.translation_units. It adds missing strings to the worksheet and
+        updates any source text that has changed. This function does not remove any unused strings from Google Sheets.
+
+        :param gsheets_manager: a GoogleSheetsManager instance that is authorized to make changes in the corresponding
+                                worksheet
+        :type gsheets_manager: GoogleSheetsManager
+
+        :rtype: None
+        """
 
         print_with_timestamp("SYNCING {} WITH GOOGLE SHEETS".format(self.original_file_path), color='y')
         lang_ws = gsheets_manager.get_worksheet(platform='ios', language=self.target_language,
@@ -122,7 +133,11 @@ class IosXliffFile(object):
         pass
 
     def update_from_google_sheets(self, gsheets_manager):
-        # type: (GoogleSheetsManager) -> None
+        """
+        Updates its own properties (translation units) from the corresponding Google worksheet
+        :param GoogleSheetsManager gsheets_manager: a GoogleSheetsManager instance that is authorized to make changes in the corresponding
+                                                    worksheet
+        """
 
         print_with_timestamp("UPDATING {}".format(self.original_file_path), color='y')
         online_translation_units = self.__get_google_sheets_translation_units(gsheets_manager=gsheets_manager)
@@ -149,7 +164,13 @@ class IosXliffFile(object):
         self.update_source_xml()
 
     def __get_google_sheets_translation_units(self, gsheets_manager):
-        # type: (GoogleSheetsManager) -> List[XliffTranslationUnit]
+        """
+
+        :param GoogleSheetsManager gsheets_manager: a GoogleSheetsManager instance that is authorized to make changes in the corresponding
+                                                    worksheet
+        :return: All the strings in the Google worksheet, converted to XliffTranslationUnit objects
+        :rtype: List[XliffTranslationUnit]
+        """
         lang_ws = gsheets_manager.get_worksheet(platform='ios',
                                                 language=self.target_language,
                                                 header_values=self.header_values)
@@ -160,7 +181,6 @@ class IosXliffFile(object):
         if len(ws_records) == 0:
             return xliff_translation_units
 
-        header_keys = list(ws_records[0])
         source_language_code = get_language_code(self.source_language)
         target_language_code = get_language_code(self.target_language)
 
@@ -181,7 +201,9 @@ class IosXliffFile(object):
         return xliff_translation_units
 
     def update_source_xml(self):
-        # type: () -> None
+        """
+        Overwrites the source XLIFF file to match the current state of the model
+        """
 
         xliff_tree = etree.parse(self.original_file_path)
         xliff_root = xliff_tree.getroot()
@@ -210,7 +232,10 @@ class IosXliffFile(object):
                          xml_declaration=True)
 
     def import_in_xcode(self, xcodeproj_path):
-        # type: (str) -> None
+        """
+        Runs 'xcodebuild' to import the XLIFF file to the provided Xcode project
+        :param str xcodeproj_path:
+        """
 
         import subprocess
 
@@ -223,7 +248,14 @@ class IosXliffFile(object):
 
 
 def export_xliff_files(xcodeproj_path, languages, output_dir):
-    # type: (str, List[str], str) -> List[IosXliffFile]
+    """
+    Runs 'xcodebuild' to export localizations from the source Xcode project
+    :param str xcodeproj_path: the path of the 'xcodeproj' file of the source project
+    :param List[str] languages: a list of language codes to export localizations for
+    :param str output_dir: path to a location where the XLIFF files will be exported
+    :return: a list of the generated XLIFF files, loaded as IosXliffFile models
+    :rtype: List[IosXliffFile]
+    """
 
     import subprocess
     from os.path import join
@@ -250,7 +282,13 @@ def export_xliff_files(xcodeproj_path, languages, output_dir):
 
 
 def load_xliff_files(languages, input_dir):
-    # type: (List[str], str) -> List[IosXliffFile]
+    """
+    Loads XLIFF files for the specified languages, from an input directory
+    :param List[str] languages: a list of language codes to export localizations for
+    :param str input_dir: the input directory path
+    :return: a list of the XLIFF files found, loaded as IosXliffFile models
+    :rtype: List[IosXliffFile]
+    """
     from os.path import join
 
     print_with_timestamp('LOADING LOCALIZATIONS FROM {}'.format(input_dir), color='y')
