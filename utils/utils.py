@@ -114,7 +114,8 @@ def unescape_xml_characters(xml_content):
     output_string = re.sub(r'\\@', r'@', xml_content)
     output_string = re.sub(r'\\\?', r'?', output_string)
     output_string = re.sub(r'&lt;', r'<', output_string)
+    output_string = re.sub(r'&amp;lt;', r'<', output_string)
     output_string = re.sub(r'&gt;', r'>', output_string)
-    # output_string = re.sub(r'&amp;', r'&', output_string)
+    output_string = re.sub(r'&amp;gt;', r'>', output_string)
 
     return output_string

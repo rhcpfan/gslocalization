@@ -251,7 +251,7 @@ class AndroidXmlFile(object):
 
         if should_add_comment:
             comment = etree.Comment(' IMPORTED FROM GOOGLE SHEETS ')
-            comment.tail = '\n'
+            comment.tail = '\n\t'
             xml_root.append(comment)
 
         for t_unit in units_to_update:
