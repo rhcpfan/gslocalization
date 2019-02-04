@@ -36,7 +36,7 @@ if __name__ == "__main__":
         localization_languages = [dev_language] + localization_languages
 
     # Toggle this to False to use the previously exported localization files
-    should_export = False
+    should_export = True
 
     if should_export:
         xliff_files = export_xliff_files(xcodeproj_path, localization_languages, loc_output_path)
