@@ -223,7 +223,7 @@ class IosXliffFile(object):
                 target_node = etree.Element('target')
                 target_node.text = t_unit.target_text
                 xml_t_unit_node.append(target_node)
-            elif target_node is not None and target_node.text != t_unit.target_text:
+            elif target_node is not None and target_node.text is not None and target_node.text != t_unit.target_text:
                 target_node.text = t_unit.target_text
 
         xliff_tree.write(self.original_file_path,

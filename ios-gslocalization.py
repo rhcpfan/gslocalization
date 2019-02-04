@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     # Starting with XCode 10.2, operations with the development languages (import/export) are supported
     if xcode_supports_dev_language_operations():
-        localization_languages = ['en'] + localization_languages
+        localization_languages = [dev_language] + localization_languages
 
     # Toggle this to False to use the previously exported localization files
     should_export = False

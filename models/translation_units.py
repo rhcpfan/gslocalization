@@ -43,7 +43,7 @@ class XliffTranslationUnit(object):
         :return: True if the text_string is not None or empty, False otherwise
         :rtype: bool
         """
-        return True if self.target_text.strip() is not '' else False
+        return False if not self.target_text.strip() else True
 
 
 class AndroidXmlTranslationUnit(object):
@@ -73,7 +73,7 @@ class AndroidXmlTranslationUnit(object):
 
     def is_translated(self):
         # type: () -> bool
-        return True if self.target_text.strip() is not '' else False
+        return False if not self.target_text.strip() else True
 
 
 class DotNetResxTranslationUnit(object):
@@ -98,4 +98,4 @@ class DotNetResxTranslationUnit(object):
 
     def is_translated(self):
         # type: () -> bool
-        return True if self.target_text.strip() is not '' else False
+        return False if not self.target_text.strip() else True
