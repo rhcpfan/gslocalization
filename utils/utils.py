@@ -12,8 +12,12 @@ def is_python_2():
     return python_ver < (3, 0)
 
 
-def print_with_timestamp(string_to_print, color):
-    # type: (str, str) -> None
+def pwt(string_to_print, color):
+    """
+    Prints a colored output with a timestamp
+    :param str string_to_print: the string to pring
+    :param str color: color of the output (currently supports red, green and yellow ['r', 'g', 'y'])
+    """
     current_timestamp = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-3]
 
     print_color = Fore.WHITE
@@ -62,3 +66,55 @@ def xcode_supports_dev_language_operations():
     return current_version >= ref_version
 
 
+def string_has_placeholders(string):
+    import re
+    placeholders = re.findall(r'%[\d<]*\$*[bBhHsScCdoxXeEfgGaAtT]', string)
+    return len(placeholders) > 0
+
+
+def escape_xml_characters(xml_content):
+    """
+    Replaces invalid XML characters with their escaped version (@, ?, <, &, ', ") -> (\@, \?, &lt;, \', \")
+    :param str xml_content: the string to escape
+    :return: the content of the input, with the invalid characters escaped
+    :rtype: str
+    """
+    import re
+
+    # replace @ with \@
+    output_string = re.sub(r'([^\\])@', r'\1\\@', xml_content)
+    # replace ? with \?
+    output_string = re.sub(r'([^\\])\?', r'\1\\?', output_string)
+    # replace < with &lt;
+    output_string = re.sub(r'<(?!string|\/string|\?|resources|\/resources|!)', r'&lt;', output_string)
+    # replace & with &amp;
+    output_string = re.sub(r'&(?!lt;|gt;|amp;|apos;|quot;)', r'&amp;', output_string)
+    # replace ' with \'
+    output_string = re.sub(r'([^\\])\'', r'\1\'', output_string)
+    # replace " with \"
+    output_string = re.sub(r'([^\\])\"', r'\1\"', output_string)
+    # replace &gt; with > (this one is not invalid)
+    output_string = re.sub(r'&gt;', r'>', output_string)
+
+    output_string = output_string.replace('&amp;lt;', '&lt;').replace('&amp;gt;', '&gt;')
+
+    return output_string
+
+
+def unescape_xml_characters(xml_content):
+    """
+    Replaces the escaped version of XML characters (\@, \?, &lt;, \', \")
+    with their plain text correspondent (@, ?, <, &, ', ")
+    :param str xml_content: the string to escape
+    :return: the content of the input, with the escaped characters converted back to plain text
+    :rtype: str
+    """
+    import re
+
+    output_string = re.sub(r'\\@', r'@', xml_content)
+    output_string = re.sub(r'\\\?', r'?', output_string)
+    output_string = re.sub(r'&lt;', r'<', output_string)
+    output_string = re.sub(r'&gt;', r'>', output_string)
+    # output_string = re.sub(r'&amp;', r'&', output_string)
+
+    return output_string

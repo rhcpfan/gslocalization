@@ -2,7 +2,7 @@ import argparse
 
 import sys
 from models.android_xml_file import import_from_res_folder
-from utils.utils import print_with_timestamp
+from utils.utils import pwt
 from cloud_managers.google_sheets_manager import GoogleSheetsManager
 
 
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     development_language_file = next((f for f in android_files if f.source_language_code == development_language), None)
     if development_language_file is None:
-        print_with_timestamp('NO STRINGS.XML FILES FOUND IN {}'.format(res_folder_path), color='r')
+        pwt('NO STRINGS.XML FILES FOUND IN {}'.format(res_folder_path), color='r')
         sys.exit(1)
 
     localized_files = [f for f in android_files if f.source_language_code != f.target_language_code]

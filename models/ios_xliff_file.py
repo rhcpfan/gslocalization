@@ -4,7 +4,7 @@ from os import path
 from lxml import etree
 from typing import List
 from utils.gs_header_types import IosHeaderValues
-from utils.utils import print_with_timestamp, get_language_name, get_language_code
+from utils.utils import pwt, get_language_name, get_language_code
 from models.translation_units import XliffTranslationUnit
 from pygsheets.custom_types import ValueRenderOption
 from pygsheets import Worksheet
@@ -100,7 +100,7 @@ class IosXliffFile(object):
         :rtype: None
         """
 
-        print_with_timestamp("SYNCING {} WITH GOOGLE SHEETS".format(self.original_file_path), color='y')
+        pwt("SYNCING {} WITH GOOGLE SHEETS".format(self.original_file_path), color='y')
         lang_ws = gsheets_manager.get_worksheet(platform='ios', language=self.target_language,
                                                 header_values=self.header_values)  # type: Worksheet
 
@@ -120,15 +120,15 @@ class IosXliffFile(object):
             if match.source_text != t_unit[IosHeaderValues.SOURCE_LANGUAGE.format(self.source_language)]:
                 cell_address = 'A{}'.format(idx + 2)
                 lang_ws.update_value(cell_address, match.source_text)
-                print_with_timestamp('UPDATED SOURCE TEXT FROM {} TO {}'.format(t_unit[self.source_language],
-                                                                                match.source_text), color='g')
+                pwt('UPDATED SOURCE TEXT FROM {} TO {}'.format(t_unit[self.source_language],
+                                                               match.source_text), color='g')
 
         lang_ws.sort_range((2, 1), (lang_ws.rows, lang_ws.cols))
 
         for r_to_add in records_to_add:
-            print_with_timestamp("ADDED {} TO {} - {}".format(r_to_add, lang_ws.spreadsheet.title, lang_ws.title), color='g')
+            pwt("ADDED {} TO {} - {}".format(r_to_add, lang_ws.spreadsheet.title, lang_ws.title), color='g')
 
-        print_with_timestamp("ADDED {} RECORDS TO {} - {}".format(len(records_to_add), lang_ws.spreadsheet.title, lang_ws.title), color='g')
+        pwt("ADDED {} RECORDS TO {} - {}".format(len(records_to_add), lang_ws.spreadsheet.title, lang_ws.title), color='g')
 
         pass
 
@@ -139,7 +139,7 @@ class IosXliffFile(object):
                                                     worksheet
         """
 
-        print_with_timestamp("UPDATING {}".format(self.original_file_path), color='y')
+        pwt("UPDATING {}".format(self.original_file_path), color='y')
         online_translation_units = self.__get_google_sheets_translation_units(gsheets_manager=gsheets_manager)
         self.has_updates = False
 
@@ -157,7 +157,7 @@ class IosXliffFile(object):
             matched_units = [online_unit for online_unit in online_translation_units if
                              online_unit.identifier == t_unit.identifier]
             if len(matched_units) > 0 and matched_units[0].is_translated():
-                print_with_timestamp(u"TRANSLATED: {}".format(matched_units[0]), color='g')
+                pwt(u"TRANSLATED: {}".format(matched_units[0]), color='g')
                 t_unit.target_text = matched_units[0].target_text
                 self.has_updates = True
 
@@ -242,7 +242,7 @@ class IosXliffFile(object):
         xcb_params = ['-importLocalizations', '-localizationPath', self.original_file_path,
                       '-project', xcodeproj_path]
 
-        print_with_timestamp("IMPORTING {} INTO {}".format(self.original_file_path, path.basename(path.normpath(xcodeproj_path))), color='y')
+        pwt("IMPORTING {} INTO {}".format(self.original_file_path, path.basename(path.normpath(xcodeproj_path))), color='y')
         xcb = subprocess.Popen(['xcodebuild'] + xcb_params, stdout=subprocess.PIPE)
         xcb.wait()
 
@@ -267,7 +267,7 @@ def export_xliff_files(xcodeproj_path, languages, output_dir):
         xcb_params.append('-exportLanguage')
         xcb_params.append(language)
 
-    print_with_timestamp('GENERATING XLIFF FILES FOR {} TO {}'.format(', '.join(languages), output_dir), color='y')
+    pwt('GENERATING XLIFF FILES FOR {} TO {}'.format(', '.join(languages), output_dir), color='y')
     xcb = subprocess.Popen(['xcodebuild'] + xcb_params, stdout=subprocess.PIPE)
     xcb.wait()
 
@@ -291,7 +291,7 @@ def load_xliff_files(languages, input_dir):
     """
     from os.path import join
 
-    print_with_timestamp('LOADING LOCALIZATIONS FROM {}'.format(input_dir), color='y')
+    pwt('LOADING LOCALIZATIONS FROM {}'.format(input_dir), color='y')
 
     xliff_files = []  # type: List[IosXliffFile]
     for language in languages:
@@ -303,6 +303,6 @@ def load_xliff_files(languages, input_dir):
 
         xliff_file = IosXliffFile(file_path=xliff_file_path)
         xliff_files.append(xliff_file)
-        print_with_timestamp('LOADED {}'.format(xliff_file_path), color='y')
+        pwt('LOADED {}'.format(xliff_file_path), color='y')
 
     return xliff_files
