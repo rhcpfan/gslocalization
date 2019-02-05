@@ -30,12 +30,20 @@ class IosXliffFile(object):
         return [t_unit for t_unit in self.translation_units if t_unit.target_text is None or t_unit.target_text is '']
 
     @property
+    def source_language_header(self):
+        return IosHeaderValues.SOURCE_LANGUAGE.format(self.source_language)
+
+    @property
+    def target_language_header(self):
+        return IosHeaderValues.TARGET_LANGUAGE.format(self.target_language)
+
+    @property
     def header_values(self):
         """
         :return: A list of strings that represent the worksheet header values.
         """
-        return [IosHeaderValues.SOURCE_LANGUAGE.format(self.source_language),
-                IosHeaderValues.TARGET_LANGUAGE.format(self.target_language),
+        return [self.source_language_header,
+                self.target_language_header,
                 IosHeaderValues.EXAMPLE,
                 IosHeaderValues.COMMENT,
                 IosHeaderValues.KEY,
@@ -186,8 +194,8 @@ class IosXliffFile(object):
 
         for record in ws_records:
 
-            xliff_translation_unit = XliffTranslationUnit(source_text=record[IosHeaderValues.SOURCE_LANGUAGE.format(self.source_language)],
-                                                          target_text=record[IosHeaderValues.TARGET_LANGUAGE.format(self.target_language)],
+            xliff_translation_unit = XliffTranslationUnit(source_text=record[self.source_language_header],
+                                                          target_text=record[self.target_language_header],
                                                           example_text=record[IosHeaderValues.EXAMPLE],
                                                           notes=record[IosHeaderValues.COMMENT],
                                                           identifier=record[IosHeaderValues.KEY],

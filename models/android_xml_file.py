@@ -28,11 +28,16 @@ class AndroidXmlFile(object):
         self.load(file_path=file_path)
 
     @property
-    def header_values(self):
-        source_header_value = AndroidHeaderValues.SOURCE_LANGUAGE.format(self.source_language)
-        target_header_value = AndroidHeaderValues.TARGET_LANGUAGE.format(self.target_language)
+    def source_language_header(self):
+        return AndroidHeaderValues.SOURCE_LANGUAGE.format(self.source_language)
 
-        return [source_header_value, target_header_value, AndroidHeaderValues.STRING_ID]
+    @property
+    def target_language_header(self):
+        return AndroidHeaderValues.TARGET_LANGUAGE.format(self.target_language)
+
+    @property
+    def header_values(self):
+        return [self.source_language_header, self.target_language_header, AndroidHeaderValues.STRING_ID]
 
     def load(self, file_path):
         # type: (str) -> None
@@ -175,11 +180,9 @@ class AndroidXmlFile(object):
         if len(ws_records) == 0:
             return xml_translation_units
 
-        target_language_key = AndroidHeaderValues.TARGET_LANGUAGE.format(self.target_language)
-
         for record in ws_records:
 
-            xml_translation_unit = AndroidXmlTranslationUnit(target_text=record[target_language_key],
+            xml_translation_unit = AndroidXmlTranslationUnit(target_text=record[self.target_language_header],
                                                              identifier=record[AndroidHeaderValues.STRING_ID],
                                                              target_language=self.target_language_code,
                                                              friendly_target_language=self.target_language)
