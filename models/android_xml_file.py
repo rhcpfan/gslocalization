@@ -118,7 +118,7 @@ class AndroidXmlFile(object):
         missing_records += missing_untranslated_records
 
         if len(missing_records) > 0:
-            lang_ws.insert_rows(row=lang_ws.rows - 1, number=len(missing_records), values=missing_records, inherit=True)
+            lang_ws.insert_rows(row=lang_ws.rows, number=len(missing_records), values=missing_records, inherit=True)
 
         lang_ws.sort_range((2, 1), (lang_ws.rows, lang_ws.cols))
 

@@ -68,6 +68,7 @@ class GoogleSheetsManager(object):
 
         current_header = worksheet.get_row(row=1)
         if current_header != header_values:
-            worksheet.insert_rows(row=0, number=1, values=header_values)
+            update_range = 'A1:{}1'.format(chr(ord('A') + (worksheet.cols - 1)))
+            worksheet.update_values(crange=update_range, values=[header_values], parse=False)
 
         pass

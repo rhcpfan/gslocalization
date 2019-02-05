@@ -109,7 +109,7 @@ class IosXliffFile(object):
 
         records_to_add = [u.record_value for u in self.translation_units if u.identifier not in ws_records_ids]
         if len(records_to_add) > 0:
-            lang_ws.insert_rows(row=lang_ws.rows - 1, number=len(records_to_add), values=records_to_add, inherit=True)
+            lang_ws.insert_rows(row=lang_ws.rows, number=len(records_to_add), values=records_to_add, inherit=True)
 
         for idx, t_unit in enumerate(ws_records):
             match = next((u for u in self.translation_units if u.identifier == t_unit[IosHeaderValues.KEY]), None)
