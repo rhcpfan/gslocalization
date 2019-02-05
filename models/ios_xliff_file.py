@@ -125,11 +125,14 @@ class IosXliffFile(object):
             if match is None:
                 continue
 
-            if match.source_text != t_unit[IosHeaderValues.SOURCE_LANGUAGE.format(self.source_language)]:
-                cell_address = 'A{}'.format(idx + 2)
-                lang_ws.update_value(cell_address, match.source_text)
-                pwt('UPDATED SOURCE TEXT FROM {} TO {}'.format(t_unit[self.source_language],
-                                                               match.source_text), color='g')
+            if match.source_text != t_unit[self.source_language_header]:
+                source_cell_address = 'A{}'.format(idx + 2)
+                target_cell_address = 'B{}'.format(idx + 2)
+                lang_ws.update_value(source_cell_address, match.source_text)
+                lang_ws.update_value(target_cell_address, '')
+                pwt('UPDATED SOURCE TEXT FOR {} FROM {} TO {}'.format(t_unit[IosHeaderValues.KEY],
+                                                                      t_unit[self.source_language_header],
+                                                                      match.source_text), color='g')
 
         lang_ws.sort_range((2, 1), (lang_ws.rows, lang_ws.cols))
 
