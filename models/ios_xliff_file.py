@@ -81,7 +81,7 @@ class IosXliffFile(object):
                 target_text = target_text if target_text is not None else ''
                 note_text = note_element.text if note_element is not None else ''
                 note_text = note_text if note_text is not None else ''
-                example_text = source_text if '%' not in source_text else ''
+                example_text = '' if '%' not in source_text else 'TODO_INSERT_EXAMPLE'
 
                 t_unit = XliffTranslationUnit(identifier=trans_unit_id,
                                               source_language=source_language_code,
