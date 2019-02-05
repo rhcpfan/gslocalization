@@ -32,6 +32,15 @@ def pwt(string_to_print, color):
     print(u'{}[{}] {}'.format(print_color, current_timestamp, string_to_print))
 
 
+def get_input(prompt):
+    try:
+        input_ = raw_input
+    except NameError:
+        input_ = input
+
+    return input_(u'{}{}'.format(Fore.GREEN, prompt))
+
+
 def get_language_name(language_code):
     # type: (str) -> str
     if is_python_2():

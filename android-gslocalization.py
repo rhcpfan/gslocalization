@@ -2,7 +2,7 @@ import argparse
 
 import sys
 from models.android_xml_file import import_from_res_folder
-from utils.utils import pwt
+from utils.utils import pwt, get_input
 from cloud_managers.google_sheets_manager import GoogleSheetsManager
 
 
@@ -34,12 +34,19 @@ if __name__ == "__main__":
         pwt('NO STRINGS.XML FILES FOUND IN {}'.format(res_folder_path), color='r')
         sys.exit(1)
 
-    localized_files = [f for f in android_files if f.source_language_code != f.target_language_code]
+    op_type = get_input('Enter operation type [1=export, 2=import, 3=export&import]: ')
 
-    for l_file in localized_files:
-        l_file.upload_to_google_sheets(gsheets_manager=google_sheets_manager)
-        l_file.update_from_google_sheets(gsheets_manager=google_sheets_manager,
-                                         dev_language_file=development_language_file)
-        l_file.update_source_xml()
-
-    development_language_file.update_source_xml()
+    if op_type == '1':
+        for l_file in android_files:
+            l_file.upload_to_google_sheets(gsheets_manager=google_sheets_manager)
+    elif op_type == '2':
+        for l_file in android_files:
+            l_file.update_from_google_sheets(gsheets_manager=google_sheets_manager,
+                                             dev_language_file=development_language_file)
+            l_file.update_source_xml()
+    elif op_type == '3':
+        for l_file in android_files:
+            l_file.upload_to_google_sheets(gsheets_manager=google_sheets_manager)
+            l_file.update_from_google_sheets(gsheets_manager=google_sheets_manager,
+                                             dev_language_file=development_language_file)
+            l_file.update_source_xml()

@@ -2,7 +2,7 @@ import argparse
 from os import path
 from models.ios_xliff_file import export_xliff_files, load_xliff_files
 from cloud_managers.google_sheets_manager import GoogleSheetsManager
-from utils.utils import xcode_supports_dev_language_operations
+from utils.utils import xcode_supports_dev_language_operations, get_input
 
 
 def parse_args():
@@ -43,8 +43,19 @@ if __name__ == "__main__":
     else:
         xliff_files = load_xliff_files(localization_languages, loc_output_path)
 
-    for l_file in xliff_files:
-        l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager)
-        l_file.update_from_google_sheets(gsheets_manager=google_sheets_manager)
-        if l_file.has_updates:
-            l_file.import_in_xcode(xcodeproj_path=xcodeproj_path)
+    op_type = get_input('Enter operation type [1=export, 2=import, 3=export&import]: ')
+
+    if op_type == '1':
+        for l_file in xliff_files:
+            l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager)
+    elif op_type == '2':
+        for l_file in xliff_files:
+            l_file.update_from_google_sheets(gsheets_manager=google_sheets_manager)
+            if l_file.has_updates:
+                l_file.import_in_xcode(xcodeproj_path=xcodeproj_path)
+    elif op_type == '3':
+        for l_file in xliff_files:
+            l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager)
+            l_file.update_from_google_sheets(gsheets_manager=google_sheets_manager)
+            if l_file.has_updates:
+                l_file.import_in_xcode(xcodeproj_path=xcodeproj_path)
