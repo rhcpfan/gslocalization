@@ -3,11 +3,13 @@ from copy import deepcopy
 from os import path, walk
 from lxml import etree
 from typing import List
-from utils.gs_header_types import AndroidHeaderValues
-from utils.utils import get_language_name, string_has_placeholders, escape_xml_characters, unescape_xml_characters
+
 from pygsheets.custom_types import ValueRenderOption
 
-from utils.utils import pwt, is_python_2
+from utils.gs_header_types import AndroidHeaderValues
+from utils.utils import get_language_name, string_has_placeholders
+from utils.utils import escape_xml_characters, unescape_xml_characters
+from utils.utils import pwt, is_python_2, get_timestamp
 from models.translation_units import AndroidXmlTranslationUnit
 
 if is_python_2():
@@ -253,9 +255,10 @@ class AndroidXmlFile(object):
                 break
 
         if should_add_comment:
-            comment = etree.Comment(' IMPORTED FROM GOOGLE SHEETS ')
-            comment.tail = '\n\t'
-            xml_root.append(comment)
+            comment_text = ' IMPORTED FROM GOOGLE SHEETS ({})'.format(get_timestamp())
+            comment_node = etree.Comment(comment_text)
+            comment_node.tail = '\n\t'
+            xml_root.append(comment_node)
 
         for t_unit in units_to_update:
 

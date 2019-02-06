@@ -12,13 +12,17 @@ def is_python_2():
     return python_ver < (3, 0)
 
 
+def get_timestamp():
+    return datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-3]
+
+
 def pwt(string_to_print, color):
     """
     Prints a colored output with a timestamp
     :param str string_to_print: the string to pring
     :param str color: color of the output (currently supports red, green and yellow ['r', 'g', 'y'])
     """
-    current_timestamp = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-3]
+    current_timestamp = get_timestamp()
 
     print_color = Fore.WHITE
     color = color.lower()
