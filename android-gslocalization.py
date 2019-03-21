@@ -1,6 +1,6 @@
 import argparse
 
-import sys
+from sys import exit
 from models.android_xml_file import import_from_res_folder
 from utils.utils import pwt, get_input
 from cloud_managers.google_sheets_manager import GoogleSheetsManager
@@ -20,6 +20,14 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+
+    op_values = ['1', '2', '3']
+    op_type = get_input('Enter operation type [1=export, 2=import, 3=export&import]: ')
+
+    if op_type not in op_values:
+        pwt('INVALID OPERATION')
+        exit(1)
+
     res_folder_path = args['res_folder_path']
     service_account_file = args['auth_file_path']
     user_email = args['email']
@@ -32,9 +40,7 @@ if __name__ == "__main__":
     development_language_file = next((f for f in android_files if f.source_language_code == development_language), None)
     if development_language_file is None:
         pwt('NO STRINGS.XML FILES FOUND IN {}'.format(res_folder_path), color='r')
-        sys.exit(1)
-
-    op_type = get_input('Enter operation type [1=export, 2=import, 3=export&import]: ')
+        exit(1)
 
     if op_type == '1':
         for l_file in android_files:
