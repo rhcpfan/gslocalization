@@ -96,7 +96,7 @@ class IosXliffFile(object):
 
                 self.translation_units.append(t_unit)
 
-    def sync_with_google_sheets(self, gsheets_manager):
+    def sync_with_google_sheets(self, gsheets_manager, remove_unused_strings):
         """
         Updates the corresponding worksheet with self.translation_units. It adds missing strings to the worksheet and
         updates any source text that has changed. This function does not remove any unused strings from Google Sheets.
@@ -123,6 +123,11 @@ class IosXliffFile(object):
             match = next((u for u in self.translation_units if u.identifier == t_unit[IosHeaderValues.KEY]), None)
 
             if match is None:
+                if remove_unused_strings:
+                    lang_ws.delete_rows(idx + 2)
+                    pwt('DELETED {} ({}) [FROM ROW {}]'.format(t_unit[IosHeaderValues.KEY],
+                                                               t_unit[self.source_language_header],
+                                                               idx + 2), color='r')
                 continue
 
             if match.source_text != t_unit[self.source_language_header]:
@@ -185,7 +190,7 @@ class IosXliffFile(object):
         lang_ws = gsheets_manager.get_worksheet(platform='ios',
                                                 language=self.target_language,
                                                 header_values=self.header_values)
-        ws_records = lang_ws.get_all_records(numericise_data=False, value_render=ValueRenderOption.FORMULA)
+        ws_records = lang_ws.get_all_records(numericise_data=False, value_render=ValueRenderOption.UNFORMATTED_VALUE)
 
         xliff_translation_units = []
 

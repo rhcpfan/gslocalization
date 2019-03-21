@@ -1,5 +1,7 @@
 import argparse
+from sys import exit
 from os import path
+from utils.utils import pwt
 from models.ios_xliff_file import export_xliff_files, load_xliff_files
 from cloud_managers.google_sheets_manager import GoogleSheetsManager
 from utils.utils import xcode_supports_dev_language_operations, get_input
@@ -21,6 +23,16 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
+    op_type = get_input('Export XCLOC files? [0=no, 1=yes]: ')
+    should_export = op_type == '1'
+
+    op_values = ['1', '2', '3', '4']
+    op_type = get_input('Enter operation type [1=export, 2=import, 3=export&import, 4=remove unused]: ')
+
+    if op_type not in op_values:
+        pwt('INVALID OPERATION')
+        exit(1)
+
     xcodeproj_path = args['xcodeproj_path'].rstrip('/')
     project_name = path.splitext(path.basename(xcodeproj_path))[0]
     loc_output_path = args['output_dir']
@@ -35,19 +47,14 @@ if __name__ == "__main__":
     if xcode_supports_dev_language_operations():
         localization_languages = [dev_language] + localization_languages
 
-    # Toggle this to False to use the previously exported localization files
-    should_export = True
-
     if should_export:
         xliff_files = export_xliff_files(xcodeproj_path, localization_languages, loc_output_path)
     else:
         xliff_files = load_xliff_files(localization_languages, loc_output_path)
 
-    op_type = get_input('Enter operation type [1=export, 2=import, 3=export&import]: ')
-
     if op_type == '1':
         for l_file in xliff_files:
-            l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager)
+            l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager, remove_unused_strings=False)
     elif op_type == '2':
         for l_file in xliff_files:
             l_file.update_from_google_sheets(gsheets_manager=google_sheets_manager)
@@ -55,7 +62,10 @@ if __name__ == "__main__":
                 l_file.import_in_xcode(xcodeproj_path=xcodeproj_path)
     elif op_type == '3':
         for l_file in xliff_files:
-            l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager)
+            l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager, remove_unused_strings=False)
             l_file.update_from_google_sheets(gsheets_manager=google_sheets_manager)
             if l_file.has_updates:
                 l_file.import_in_xcode(xcodeproj_path=xcodeproj_path)
+    elif op_type == '4':
+        for l_file in xliff_files:
+            l_file.sync_with_google_sheets(gsheets_manager=google_sheets_manager, remove_unused_strings=True)
