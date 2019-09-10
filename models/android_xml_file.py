@@ -106,7 +106,7 @@ class AndroidXmlFile(object):
             t_unit.target_text = ''
             t_unit.target_language = self.target_language_code
             t_unit.friendly_target_language = self.target_language
-            pwt("MISSING {} TRANSLATION FOR: {} - {}".format(self.target_language, t_unit.identifier,
+            pwt(u"MISSING {} TRANSLATION FOR: {} - {}".format(self.target_language, t_unit.identifier,
                                                              t_unit.source_text), color='r')
 
     def upload_to_google_sheets(self, gsheets_manager):

@@ -237,11 +237,11 @@ class IosXliffFile(object):
 
             if target_node is None and t_unit.is_translated():
                 target_node = etree.Element('target')
-                target_node.text = t_unit.target_text
+                target_node.text = unicode(t_unit.target_text)
                 xml_t_unit_node.append(target_node)
             elif target_node is not None and target_node.text is not None and target_node.text != t_unit.target_text:
                 if t_unit.is_translated():
-                    target_node.text = t_unit.target_text
+                    target_node.text = unicode(t_unit.target_text)
                 else:
                     target_node.getparent().remove(target_node)
 

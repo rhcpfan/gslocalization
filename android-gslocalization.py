@@ -37,7 +37,7 @@ if __name__ == "__main__":
     google_sheets_manager = GoogleSheetsManager(service_account_file, user_email, project_name)
     android_files = import_from_res_folder(res_folder_path, development_language)
 
-    development_language_file = next((f for f in android_files if f.source_language_code == development_language), None)
+    development_language_file = next((f for f in android_files if f.target_language_code == development_language), None)
     if development_language_file is None:
         pwt('NO STRINGS.XML FILES FOUND IN {}'.format(res_folder_path), color='r')
         exit(1)

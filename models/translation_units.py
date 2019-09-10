@@ -43,7 +43,7 @@ class XliffTranslationUnit(object):
         :return: True if the text_string is not None or empty, False otherwise
         :rtype: bool
         """
-        return False if not self.target_text.strip() else True
+        return False if not unicode(self.target_text).strip() else True
 
 
 class AndroidXmlTranslationUnit(object):
