@@ -244,6 +244,11 @@ class IosXliffFile(object):
                     target_node.text = unicode(t_unit.target_text)
                 else:
                     target_node.getparent().remove(target_node)
+            elif target_node is not None and target_node.text is None and target_node.text != t_unit.target_text:
+                if t_unit.is_translated():
+                    target_node.text = unicode(t_unit.target_text)
+                else:
+                    target_node.getparent().remove(target_node)
 
         xliff_tree.write(self.original_file_path,
                          encoding='utf-8',
