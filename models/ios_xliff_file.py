@@ -2,7 +2,7 @@ import sys
 
 from os import path
 from lxml import etree
-from typing import List
+from typing import List, Dict, Any, Union, Tuple
 from utils.gs_header_types import IosHeaderValues
 from utils.utils import pwt, get_language_name, get_language_code
 from models.translation_units import XliffTranslationUnit
@@ -101,6 +101,7 @@ class IosXliffFile(object):
         Updates the corresponding worksheet with self.translation_units. It adds missing strings to the worksheet and
         updates any source text that has changed. This function does not remove any unused strings from Google Sheets.
 
+        :param remove_unused_strings:
         :param gsheets_manager: a GoogleSheetsManager instance that is authorized to make changes in the corresponding
                                 worksheet
         :type gsheets_manager: GoogleSheetsManager
@@ -119,32 +120,39 @@ class IosXliffFile(object):
         if len(records_to_add) > 0:
             lang_ws.insert_rows(row=lang_ws.rows, number=len(records_to_add), values=records_to_add, inherit=True)
 
+        if remove_unused_strings:
+            stings_to_remove = []
+            for t_unit in ws_records:
+                match = next((u for u in self.translation_units if u.identifier == t_unit[IosHeaderValues.KEY]), None)
+                if match is None:
+                    stings_to_remove.append(t_unit)
+
+            for t_unit in stings_to_remove:
+                t_unit_index = ws_records.index(t_unit)
+                lang_ws.delete_rows(t_unit_index + 2)
+                pwt(u'DELETED {} ({}) [FROM ROW {}]'.format(t_unit[IosHeaderValues.KEY],
+                                                            t_unit[self.source_language_header],
+                                                            t_unit_index), color='r')
+                ws_records.remove(t_unit)
+
         for idx, t_unit in enumerate(ws_records):
             match = next((u for u in self.translation_units if u.identifier == t_unit[IosHeaderValues.KEY]), None)
 
-            if match is None:
-                if remove_unused_strings:
-                    lang_ws.delete_rows(idx + 2)
-                    pwt('DELETED {} ({}) [FROM ROW {}]'.format(t_unit[IosHeaderValues.KEY],
-                                                               t_unit[self.source_language_header],
-                                                               idx + 2), color='r')
-                continue
-
-            if match.source_text != t_unit[self.source_language_header]:
+            if match is not None and match.source_text != t_unit[self.source_language_header]:
                 source_cell_address = 'A{}'.format(idx + 2)
                 target_cell_address = 'B{}'.format(idx + 2)
                 lang_ws.update_value(source_cell_address, match.source_text)
                 lang_ws.update_value(target_cell_address, '')
-                pwt('UPDATED SOURCE TEXT FOR {} FROM {} TO {}'.format(t_unit[IosHeaderValues.KEY],
+                pwt(u'UPDATED SOURCE TEXT FOR {} FROM {} TO {}'.format(t_unit[IosHeaderValues.KEY],
                                                                       t_unit[self.source_language_header],
                                                                       match.source_text), color='g')
 
         lang_ws.sort_range((2, 1), (lang_ws.rows, lang_ws.cols))
 
         for r_to_add in records_to_add:
-            pwt("ADDED {} TO {} - {}".format(r_to_add, lang_ws.spreadsheet.title, lang_ws.title), color='g')
+            pwt(u"ADDED {} TO {} - {}".format(r_to_add, lang_ws.spreadsheet.title, lang_ws.title), color='g')
 
-        pwt("ADDED {} RECORDS TO {} - {}".format(len(records_to_add), lang_ws.spreadsheet.title, lang_ws.title), color='g')
+        pwt(u"ADDED {} RECORDS TO {} - {}".format(len(records_to_add), lang_ws.spreadsheet.title, lang_ws.title), color='g')
 
         pass
 
