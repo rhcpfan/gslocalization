@@ -113,7 +113,7 @@ class IosXliffFile(object):
         lang_ws = gsheets_manager.get_worksheet(platform='ios', language=self.target_language,
                                                 header_values=self.header_values)  # type: Worksheet
 
-        ws_records = lang_ws.get_all_records(numericise_data=False, value_render=ValueRenderOption.FORMULA)
+        ws_records = lang_ws.get_all_records(numericise_data=False, value_render=ValueRenderOption.UNFORMATTED_VALUE)
         ws_records_ids = [r[IosHeaderValues.KEY] for r in ws_records]
 
         records_to_add = [u.record_value for u in self.translation_units if u.identifier not in ws_records_ids]
@@ -186,6 +186,36 @@ class IosXliffFile(object):
                 self.has_updates = True
 
         self.update_source_xml()
+
+    def update_from_google_sheets_memory(self, gsheets_manager):
+        """
+        Updates its own properties (translation units) from the corresponding Google worksheet
+        :param GoogleSheetsManager gsheets_manager: a GoogleSheetsManager instance that is authorized to make changes in the corresponding
+                                                    worksheet
+        """
+
+        pwt("UPDATING {}".format(self.original_file_path), color='y')
+
+        lang_ws = gsheets_manager.get_worksheet(platform='ios', language=self.target_language,
+                                                header_values=self.header_values)  # type: Worksheet
+        ws_records = lang_ws.get_all_records(numericise_data=False, value_render=ValueRenderOption.UNFORMATTED_VALUE)
+        ws_records_ids = [r[IosHeaderValues.KEY] for r in ws_records]
+
+        online_translation_units = self.__get_google_sheets_translation_units(gsheets_manager=gsheets_manager)  # type: List[XliffTranslationUnit]
+
+        untranslated_units = [u for u in online_translation_units if u.is_translated() is False]
+
+        for untranslated_unit in untranslated_units:
+            match = next((u for u in online_translation_units if u.source_text == untranslated_unit.source_text and u.is_translated()), None)
+            if match is not None:
+                for idx, record_id in enumerate(ws_records_ids):
+                    if record_id == untranslated_unit.identifier:
+                        target_cell_address = 'B{}'.format(idx + 2)
+                untranslated_unit.target_text = match.target_text
+                lang_ws.update_value(target_cell_address, match.target_text)
+                pwt(u"TRANSLATED: {}".format(untranslated_unit), color='g')
+
+        self.update_from_google_sheets(gsheets_manager=gsheets_manager)
 
     def __get_google_sheets_translation_units(self, gsheets_manager):
         """
